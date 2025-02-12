@@ -10,17 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(){
-    Schema::create('roles', function (Blueprint $table) {
-        $table->id();
-        $table->string('name')->unique(); // Name of the role (e.g., student, teacher, admin)
-        $table->timestamps();
-    });
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->timestamps();
+        });
     }
+    
 
     /**
      * Reverse the migrations.
      */
-    public function down(){
+    public function down(): void
+    {
         Schema::dropIfExists('roles');
     }
 };

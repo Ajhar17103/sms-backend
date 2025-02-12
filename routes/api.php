@@ -5,20 +5,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 
-Route::get('/test', function () {
-    return response()->json(['message' => 'Test route is working']);
+
+Route::group(['prefix' => 'auth'], function ($router) {
+    Route::post('login', [AuthController::class,'login']);
 });
 
-// Auth Routes
-Route::group(['prefix' => 'auth'], function () {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
-});
+Route::middleware(['auth:api'])->group(function(){
+    // Auth Routes
+    Route::post('register', [AuthController::class,'register']);
+    Route::post('user-details', [AuthController::class,'userDetails']);
+    Route::post('refresh-token', [AuthController::class,'refresh']);
+    Route::post('logout', [AuthController::class,'logout']);
 
-Route::middleware('auth:api')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/users', [AuthController::class, 'users']);
-    
     // Roles Routes
     Route::get('/roles', [RoleController::class, 'index']);
     Route::post('/roles', [RoleController::class, 'store']);

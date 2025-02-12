@@ -9,19 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(){
+    public function up()
+    {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->constrained('roles'); // Add role_id column with a foreign key constraint
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
         });
-    }
+    }    
 
     /**
      * Reverse the migrations.
      */
-    public function down(){
+    public function down(): void
+    {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['role_id']);
-            $table->dropColumn('role_id');
+            //
         });
     }
 };
