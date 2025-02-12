@@ -16,13 +16,10 @@ Route::middleware(['auth:api'])->group(function(){
     Route::post('user-details', [AuthController::class,'userDetails']);
     Route::post('refresh-token', [AuthController::class,'refresh']);
     Route::post('logout', [AuthController::class,'logout']);
-
     // Roles Routes
-    Route::get('/roles', [RoleController::class, 'index']);
-    Route::post('/roles', [RoleController::class, 'store']);
-    Route::get('/roles/{id}', [RoleController::class, 'show']);
-    Route::put('/roles/{id}', [RoleController::class, 'update']);
-    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
+    Route::get('/role/all', [RoleController::class, 'index']);
+    Route::post('/role/create', [RoleController::class, 'store']);
+    Route::get('/role/details/{id}', [RoleController::class, 'show']);
+    Route::put('/role/update/{id}', [RoleController::class, 'update']);
+    Route::delete('/role/delete/{id}', [RoleController::class, 'destroy']);
 });
-
-
