@@ -1,0 +1,24 @@
+meta {
+  name: delete-role
+  type: http
+  seq: 6
+}
+
+delete {
+  url: http://127.0.0.1:8000/api/role/delete/6
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3MzkzNTkxNTksImV4cCI6MTczOTM2Mjc1OSwibmJmIjoxNzM5MzU5MTU5LCJqdGkiOiJKUHhxZFhUYUFKYmFaNWxSIiwic3ViIjoiMiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.znB_pADJS11JAb_8XU2gPmch3TITr_MLHZAYIZuIyXk
+}
+
+body:multipart-form {
+  property_name: New Update Hotel
+  address: 456 Beachside Avenue, Miami, FL
+  cost_per_night: 199.99
+  available_rooms: 20
+  average_rating: 4
+  property_image: @file(C:\Users\Azhar\Downloads\images (5).jpg)
+}

@@ -1,0 +1,30 @@
+meta {
+  name: create-role
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:8000/api/role/create
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3MzkzNTkxNTksImV4cCI6MTczOTM2Mjc1OSwibmJmIjoxNzM5MzU5MTU5LCJqdGkiOiJKUHhxZFhUYUFKYmFaNWxSIiwic3ViIjoiMiIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.znB_pADJS11JAb_8XU2gPmch3TITr_MLHZAYIZuIyXk
+}
+
+body:json {
+  {
+      "name": "student"
+  }
+}
+
+body:multipart-form {
+  property_name: Hotel Ramada
+  address: 456 Beachside Avenue, Miami, FL
+  cost_per_night: 199.99
+  available_rooms: 10
+  average_rating: 4.5
+  property_image: @file(C:\Users\Azhar\Downloads\download.jpg)
+}
