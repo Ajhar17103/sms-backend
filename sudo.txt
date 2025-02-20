@@ -1,0 +1,445 @@
+api.php file
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\MenuController;
+
+
+Route::group(['prefix' => 'auth'], function ($router) {
+    Route::post('login', [AuthController::class,'login']);
+    Route::post('register', [AuthController::class,'register']);
+});
+
+Route::middleware(['auth:api'])->group(function(){
+    // Auth Routes
+    // Route::post('register', [AuthController::class,'register']);
+    Route::post('user-details', [AuthController::class,'userDetails']);
+    Route::post('refresh-token', [AuthController::class,'refresh']);
+    Route::post('logout', [AuthController::class,'logout']);
+
+    // Roles Routes
+    Route::get('/role/all', [RoleController::class, 'index']);
+    Route::post('/role/create', [RoleController::class, 'store']);
+    Route::get('/role/details/{id}', [RoleController::class, 'show']);
+    Route::put('/role/update/{id}', [RoleController::class, 'update']);
+    Route::delete('/role/delete/{id}', [RoleController::class, 'destroy']);
+
+    // Menu Routes
+    Route::get('/menu/all', [MenuController::class, 'index']);
+    Route::post('/menu/create', [MenuController::class, 'store']);
+    Route::get('/menu/details/{id}', [MenuController::class, 'show']);
+    Route::put('/menu/update/{id}', [MenuController::class, 'update']);
+    Route::delete('/menu/delete/{id}', [MenuController::class, 'destroy']);
+});
+
+AuthController file
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+
+class AuthController extends Controller{
+    public function register(Request $request){
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|integer|exists:roles,id'
+        ]);
+    
+        // Create user with role_id
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
+            'role_id' => $validatedData['role'],
+        ]);
+    
+        $token = Auth::guard('api')->login($user);
+    
+        return response()->json([
+            'message' => 'User registered successfully!',
+            'user' => $user,
+            // 'token' => $token
+        ], 201);
+    }
+    
+    public function login(Request $request){
+        $credentials = $request->only('email', 'password');
+    
+        // Attempt to log the user in
+        if ($token = Auth::guard('api')->attempt($credentials)) {
+            // Get the authenticated user
+            $user = Auth::guard('api')->user();
+    
+            // Return the user details along with the role_id
+            return response()->json([
+                'access_token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role_id' => $user->role_id, // Include role_id
+                ]
+            ]);
+        }
+    
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
+    
+
+    public function userDetails(){
+        return response()->json(Auth::guard('api')->user());
+    }
+
+    public function logout(){
+        Auth::guard('api')->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh(){
+        return $this->respondWithToken(Auth::guard('api')->refresh());
+    }
+
+    protected function respondWithToken($token){
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+        ]);
+    }
+}
+
+MenuController file
+
+<?php
+
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Menu;
+
+class MenuController extends Controller
+{
+    // Get all menus
+	public function index(){
+		// Retrieve all menus with their submenus and sub-submenus
+		$menus = Menu::whereNull('parent_id')->with(['subMenus.subMenus'])->get();
+	
+		// Process the menus to remove any duplicate submenus and nested submenus
+		$menus->each(function ($menu) {
+			if ($menu->sub_menus) {
+				$menu->sub_menus = $menu->sub_menus->map(function ($subMenu) {
+					if ($subMenu->sub_menus) {
+						$subMenu->sub_menus = $subMenu->sub_menus->map(function ($subSubMenu) {
+							return $subSubMenu;  // Return sub-submenus without redundancy
+						});
+					}
+					return $subMenu;
+				});
+			}
+		});
+	
+		return response()->json($menus);
+	}
+	
+
+    // Create a new menu
+	public function store(Request $request){
+		// Validate input
+		$request->validate([
+			'name' => 'required|string',
+			'type' => 'required|in:main,sub,sub-sub',
+			'parent_id' => 'nullable|exists:menus,id', // Required for sub and sub-sub menus
+		]);
+	
+		// Check for duplicate menu name
+		$existingMenu = Menu::where('name', $request->name)
+							->where('parent_id', $request->parent_id)
+							->first(); // Look for a menu with the same name and same parent_id (if it's a sub or sub-sub)
+	
+		if ($existingMenu) {
+			return response()->json([
+				'message' => 'A menu with this name already exists under the selected parent.',
+			], 409); // 409 Conflict
+		}
+	
+		// If no duplicates, create the menu
+		$menu = new Menu();
+		$menu->name = $request->name;
+		$menu->type = $request->type;
+		$menu->parent_id = $request->parent_id;
+		$menu->save();
+	
+		return response()->json($menu, 201); // Return the newly created menu
+	}
+	
+    // Show menu details
+    public function show($id){
+        $menu = Menu::with('subMenus.subMenus')->find($id);
+        if (!$menu) {
+            return response()->json(['message' => 'Menu not found'], 404);
+        }
+        return response()->json($menu);
+    }
+
+    // Update a menu
+    public function update(Request $request, $id){
+        $request->validate([
+            'name' => 'nullable|string',
+            'type' => 'nullable|in:main,sub,sub-sub',
+            'parent_id' => 'nullable|exists:menus,id', // Parent menu required for sub and sub-sub
+        ]);
+
+        $menu = Menu::find($id);
+        if (!$menu) {
+            return response()->json(['message' => 'Menu not found'], 404);
+        }
+
+        if ($request->name) {
+            $menu->name = $request->name;
+        }
+
+        if ($request->type) {
+            $menu->type = $request->type;
+        }
+
+        if ($request->parent_id) {
+            $menu->parent_id = $request->parent_id;
+        }
+
+        $menu->save();
+
+        return response()->json($menu);
+    }
+
+    // Delete a menu
+	public function destroy($id)
+	{
+		// Find the menu by its ID
+		$menu = Menu::find($id);
+	
+		// Check if the menu exists
+		if (!$menu) {
+			return response()->json(['message' => 'Menu not found'], 404);
+		}
+	
+		// Check if the menu has submenus and delete them recursively
+		if ($menu->subMenus) {
+			foreach ($menu->subMenus as $subMenu) {
+				$subMenu->deleteSubMenus(); // Recursively delete submenus
+			}
+		}
+	
+		// Delete the menu itself
+		$menu->delete();
+	
+		return response()->json(['message' => 'Menu deleted successfully']);
+	}
+	
+	// Add this method in the Menu model to handle recursive deletion of submenus
+	public function deleteSubMenus(){
+		// Delete sub-submenus first if any
+		if ($this->subMenus) {
+			foreach ($this->subMenus as $subSubMenu) {
+				$subSubMenu->deleteSubMenus(); // Recursively delete sub-submenus
+			}
+		}
+	
+		// Delete the current submenu (this could be sub-submenu as well)
+		$this->delete();
+	}
+	
+}
+
+RoleController file
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Role;
+use Illuminate\Http\Request;
+
+class RoleController extends Controller{
+    public function index(){
+        return response()->json(Role::all()); // Get all roles
+    }
+
+    public function store(Request $request){
+        $request->validate(['name' => 'required|string|unique:roles,name']);
+
+        $role = Role::create(['name' => $request->name]);
+
+        return response()->json($role, 201); // Create a new role
+    }
+
+    public function show($id){
+        $role = Role::findOrFail($id);
+        return response()->json($role);
+    }
+
+    public function update(Request $request, $id){
+        $request->validate(['name' => 'required|string|unique:roles,name']);
+
+        $role = Role::findOrFail($id);
+        $role->update(['name' => $request->name]);
+
+        return response()->json($role);
+    }
+
+    public function destroy($id){
+        $role = Role::findOrFail($id);
+        $role->delete();
+
+        return response()->json(['message' => 'Role deleted successfully']);
+    }
+}
+
+look my menu response
+url: http://127.0.0.1:8000/api/menu/all
+response: [
+    {
+      "id": 1,
+      "name": "Dashboard",
+      "type": "main",
+      "parent_id": null,
+      "created_at": "2025-02-13T08:14:36.000000Z",
+      "updated_at": "2025-02-13T08:14:36.000000Z",
+      "sub_menus": [
+        {
+          "id": 3,
+          "name": "Analytics",
+          "type": "sub",
+          "parent_id": 1,
+          "created_at": "2025-02-13T08:17:32.000000Z",
+          "updated_at": "2025-02-13T08:17:32.000000Z",
+          "sub_menus": [
+            {
+              "id": 4,
+              "name": "Test-1",
+              "type": "sub-sub",
+              "parent_id": 3,
+              "created_at": "2025-02-13T14:18:43.000000Z",
+              "updated_at": "2025-02-13T14:18:45.000000Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "All Reports",
+      "type": "main",
+      "parent_id": null,
+      "created_at": "2025-02-13T08:16:24.000000Z",
+      "updated_at": "2025-02-13T08:16:24.000000Z",
+      "sub_menus": [
+        {
+          "id": 5,
+          "name": "Re-1",
+          "type": "sub",
+          "parent_id": 2,
+          "created_at": "2025-02-13T14:19:09.000000Z",
+          "updated_at": "2025-02-13T14:19:10.000000Z",
+          "sub_menus": []
+        }
+      ]
+    }
+  ]
+
+and look my role api response
+url:http://127.0.0.1:8000/api/role/all
+response: [
+    {
+      "id": 1,
+      "name": "Admin",
+      "created_at": "2025-02-13T16:18:35.000000Z",
+      "updated_at": "2025-02-13T16:18:37.000000Z"
+    },
+    {
+      "id": 2,
+      "name": "User",
+      "created_at": "2025-02-13T08:30:06.000000Z",
+      "updated_at": "2025-02-13T08:30:06.000000Z"
+    },
+    {
+      "id": 3,
+      "name": "Guest",
+      "created_at": "2025-02-20T08:40:12.000000Z",
+      "updated_at": "2025-02-20T08:40:12.000000Z"
+    }
+  ]
+  Yes, I need a new feature
+according to my role and menu API. please create a Role-Based Menu Permissions API. Allows assigning menu permissions to a specific role. Each menu can have permissions such as view, add, edit, delete, assign, and submit.Suppose I have an Admin role(id:5) and assign the Dashboard(id:1) menu to it, granting the following permissions: 
+view: true, add: true, edit: true, delete: true, assign: true, submit: true.
+
+API payload like that: 
+{
+    "menuId": 1,
+    "roleId": 5,
+    "view": true,
+    "add": true,
+    "edit": true,
+    "delete": true,
+    "assign": true,
+    "submit": true
+}
+
+create a get api look like that
+[
+    {
+        "add": true,
+        "edit": true,
+        "delete": true,
+        "submit": true,
+        "assign": true,
+        "view": true,
+        "roleId": 1,
+        "menuId": 1,
+        "name": "Dashboard",
+        "type": "main",
+        "parent_id": null,
+        "sub_menus": [
+            {
+              "add": true,
+              "edit": true,
+              "delete": true,
+              "submit": true,
+              "assign": true,
+              "view": true,
+              "roleId": 1,
+              "menuId": 2,
+              "name": "Analytics",
+              "type": "sub",
+              "parent_id": 1,
+              "sub_menus": [
+                {
+                  "add": true,
+                  "edit": true,
+                  "delete": true,
+                  "submit": true,
+                  "assign": true,
+                  "view": true,
+                  "roleId": 1,
+                  "menuId": 4,
+                  "name": "Rx-2",
+                  "type": "sub",
+                  "parent_id": 2,
+                }
+              ]
+            }
+          ]
+        
+    }
+]
