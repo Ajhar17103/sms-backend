@@ -7,16 +7,16 @@ meta {
 post {
   url: http://localhost:8000/api/auth/register
   body: json
-  auth: bearer
+  auth: none
 }
 
 body:json {
   {
-      "name": "User",
-      "email": "user@example.com",
+      "name": "admin",
+      "email": "admin@example.com",
       "password": "password123",
       "password_confirmation": "password123",
-      "role": 2
+      "role": 5
   }
 }
 
