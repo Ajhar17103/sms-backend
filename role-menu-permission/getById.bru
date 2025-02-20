@@ -1,0 +1,15 @@
+meta {
+  name: getById
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:8000/api/role/1/menu-permissions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDAwNTE3MjcsImV4cCI6MTc0MDA1NTMyNywibmJmIjoxNzQwMDUxNzI3LCJqdGkiOiJpVFl6TU9meXBZcVNiUUdvIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.tT0HwI2FZEkfX2lH2VosN6bSzEsZBH3Dqu46cyu7Iu8
+}

@@ -1,0 +1,24 @@
+meta {
+  name: get-menus
+  type: http
+  seq: 9
+}
+
+get {
+  url: http://127.0.0.1:8000/api/menu/all
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDAwNDc2NjcsImV4cCI6MTc0MDA1MTI2NywibmJmIjoxNzQwMDQ3NjY3LCJqdGkiOiJXNVJET3NkaG1ybm5MUjB0Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.y8a4qOGtLTyLWEBsePnKyPNXYXuC3SSl6i7occCjKuQ
+}
+
+body:multipart-form {
+  property_name: Grand Ocean Resort
+  address: 456 Beachside Avenue, Miami, FL
+  cost_per_night: 199.99
+  available_rooms: 10
+  average_rating: 4.5
+  property_image: @file(C:\Users\Azhar\Downloads\istockphoto-119926339-612x612.jpg)
+}

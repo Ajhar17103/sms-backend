@@ -1,0 +1,28 @@
+meta {
+  name: assign-role-menu
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://127.0.0.1:8000/api/role/menu/assign-permissions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDAwNDc2NjcsImV4cCI6MTc0MDA1MTI2NywibmJmIjoxNzQwMDQ3NjY3LCJqdGkiOiJXNVJET3NkaG1ybm5MUjB0Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.y8a4qOGtLTyLWEBsePnKyPNXYXuC3SSl6i7occCjKuQ
+}
+
+body:json {
+  {
+      "menuId": 1,
+      "roleId": 1,
+      "view": true,
+      "add": true,
+      "edit": true,
+      "delete": true,
+      "assign": true,
+      "submit": true
+  }
+}

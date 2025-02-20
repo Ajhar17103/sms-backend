@@ -1,0 +1,37 @@
+meta {
+  name: update-permissions
+  type: http
+  seq: 5
+}
+
+put {
+  url: http://127.0.0.1:8000/api/role/menu/update-permissions
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvbG9naW4iLCJpYXQiOjE3NDAwNTE3MjcsImV4cCI6MTc0MDA1NTMyNywibmJmIjoxNzQwMDUxNzI3LCJqdGkiOiJpVFl6TU9meXBZcVNiUUdvIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.tT0HwI2FZEkfX2lH2VosN6bSzEsZBH3Dqu46cyu7Iu8
+}
+
+body:json {
+  {
+      "menuId": 1,
+      "roleId": 1,
+      "view": true,
+      "add": false,
+      "edit": true,
+      "delete": false,
+      "assign": true,
+      "submit": true
+  }
+}
+
+body:multipart-form {
+  property_name: New Update Hotel
+  address: 456 Beachside Avenue, Miami, FL
+  cost_per_night: 199.99
+  available_rooms: 20
+  average_rating: 4
+  property_image: @file(C:\Users\Azhar\Downloads\images (5).jpg)
+}
