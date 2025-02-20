@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\RoleMenuPermissionController;
 
 
 Route::group(['prefix' => 'auth'], function ($router) {
@@ -32,4 +33,12 @@ Route::middleware(['auth:api'])->group(function(){
     Route::get('/menu/details/{id}', [MenuController::class, 'show']);
     Route::put('/menu/update/{id}', [MenuController::class, 'update']);
     Route::delete('/menu/delete/{id}', [MenuController::class, 'destroy']);
+
+    Route::post('/role/menu/assign-permissions',[RoleMenuPermissionController::class, 'assignPermissions']);
+
+    Route::put('/role/menu/update-permissions', [RoleMenuPermissionController::class, 'updatePermissions']);
+    Route::get('/role/{roleId}/menu-permissions', [RoleMenuPermissionController::class, 'getRoleMenuPermissions']);
+    Route::get('/role/menu-permissions/all', [RoleMenuPermissionController::class, 'getAllRoleMenuPermissions']);
+
+
 });

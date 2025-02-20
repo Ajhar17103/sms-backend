@@ -9,8 +9,13 @@ class Menu extends Model
     protected $fillable = ['name', 'type', 'parent_id'];
 
     // Relationship: A menu can have submenus
-    public function subMenus()
-    {
+    public function subMenus(){
         return $this->hasMany(Menu::class, 'parent_id');
+    }
+
+    public function rolePermissions(){
+    return $this->belongsToMany(Role::class, 'role_menu_permissions')
+                ->withPivot('view', 'add', 'edit', 'delete', 'assign', 'submit')
+                ->withTimestamps();
     }
 }

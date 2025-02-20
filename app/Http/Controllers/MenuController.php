@@ -6,8 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 
-class MenuController extends Controller
-{
+class MenuController extends Controller{
     // Get all menus
 	public function index(){
 		// Retrieve all menus with their submenus and sub-submenus
@@ -30,6 +29,28 @@ class MenuController extends Controller
 		return response()->json($menus);
 	}
 	
+// 	public function index(Request $request){
+//     // Get the authenticated user
+//     $user = Auth::guard('api')->user();
+
+//     // Get the role of the authenticated user
+//     $roleId = $user->role_id;
+
+//     // Retrieve the menus that the role has permissions for
+//     $menus = Menu::whereNull('parent_id')
+//         ->with(['subMenus.subMenus' => function ($query) use ($roleId) {
+//             $query->whereHas('rolePermissions', function ($q) use ($roleId) {
+//                 $q->where('role_id', $roleId);
+//             });
+//         }])
+//         ->whereHas('rolePermissions', function ($query) use ($roleId) {
+//             $query->where('role_id', $roleId);
+//         })
+//         ->get();
+
+//     return response()->json($menus);
+// }
+
 
     // Create a new menu
 	public function store(Request $request){
